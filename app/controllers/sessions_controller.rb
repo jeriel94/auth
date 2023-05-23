@@ -9,20 +9,22 @@ class SessionsController < ApplicationController
     @user = User.find_by({"email" => params["emails"]})
     # 2. if the user exists -> check if they know their password
     if @user != nil
+        if BCrypt::Password.new(@user["password"]) ==  params["password"]
     # 3. if they know their password -> login is successful
-    if @user["password"] ==  params["password"]
+          cookies["user_id"] = @user["id"]
+          #use session instead of cookies for more security. Specifically designed so it's not as exposed as any regular cookies.
+          flash["notice"] = "Welcome."
+          redirect_to "/companies"
+        else
     # 4. if the email does not exist or they do not know their password -> login fails
-    flash["notice"] = "Welcome."
-    redirect_to "/companies"
+          flash["notice"] = "Nope."
+           redirect_to "/sessions/new"
+        end
     else
       flash["notice"] = "Nope."
       redirect_to "/sessions/new"
     end
-  else
-    flash["notice"] = "Nope."
-    redirect_to "/sessions/new"
   end
-end
 
   def destroy
     # logout the user
